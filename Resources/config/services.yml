@@ -1,0 +1,105 @@
+parameters:
+    event.cart.pre_cart_validation: "alpixel_shop.cart.event.pre_cart_validation"
+    event.cart.process_for_order: "alpixel_shop.cart.event.process_for_order"
+
+services:
+    # CART
+    alpixel_shop.cart_manager:
+        class: Alpixel\Bundle\ShopBundle\Helper\Cart\CartManager
+        arguments:
+            - "@doctrine.orm.default_entity_manager"
+            - "@security.token_storage"
+            - "@security.authorization_checker"
+            - "@event_dispatcher"
+            - "@alpixel_shop.session_cart"
+            - "@alpixel_shop.cart_validity"
+            - "@alpixel_shop.price_helper"
+
+    alpixel_shop.cart_validity:
+        class: Alpixel\Bundle\ShopBundle\Helper\Cart\CartValidity
+        arguments:
+            - "%alpixel_shop.stock%"
+
+    alpixel_shop.session_cart:
+        class: Alpixel\Bundle\ShopBundle\Helper\Cart\SessionCart
+        arguments:
+            - "@session"
+
+    alpixel_shop.price_helper:
+        class: Alpixel\Bundle\ShopBundle\Helper\Cart\PriceHelper
+        arguments:
+            - "@security.token_storage"
+            - "@security.authorization_checker"
+            - "@doctrine.orm.entity_manager"
+            - "@event_dispatcher"
+            - "%alpixel_shop.default_currency%"
+
+    # ORDER
+    alpixel_shop.order_manager:
+        class: Alpixel\Bundle\ShopBundle\Helper\Order\OrderManager
+        arguments:
+            - "@alpixel_shop.cart_manager"
+            - "@doctrine.orm.default_entity_manager"
+            - "@event_dispatcher"
+            - "%alpixel_shop.default_currency%"
+            - "@alpixel_shop.price_helper"
+
+    alpixel_shop.listener.order_listener:
+        class: Alpixel\Bundle\ShopBundle\EventListener\OrderListener
+        arguments:
+            - "@alpixel_shop.order_manager"
+        tags:
+            - { name: kernel.event_listener, event: "%event.cart.process_for_order%", method: onProcessForOrder }
+
+    # SUBSCRIBER
+    alpixel_shop.listener.doctrine.dynamic_relation:
+        class: Alpixel\Bundle\ShopBundle\EventListener\DynamicRelationSubscriber
+        arguments:
+            - "%alpixel_shop.customer_class%"
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+
+    alpixel_shop.listener.doctrine.product_resolver_subscriber:
+        class: Alpixel\Bundle\ShopBundle\EventListener\ProductResolverSubscriber
+        arguments:
+          - "%alpixel_shop.product_inheritance%"
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+
+    alpixel_shop.listener.product_calculation_subscriber:
+        class: Alpixel\Bundle\ShopBundle\EventListener\ProductCalculationSubscriber
+        arguments:
+            - "@alpixel_shop.price_helper"
+        tags:
+            - { name: kernel.event_subscriber }
+
+    alpixel_shop.logout_success_handler:
+        class: Alpixel\Bundle\ShopBundle\Handler\LogoutSuccessHandler
+        arguments:
+          - "@alpixel_shop.session_cart"
+          - "@router"
+
+    alpixel_shop.twig.product_extension:
+        class: Alpixel\Bundle\ShopBundle\Twig\ProductExtension
+        arguments:
+            - "@doctrine.orm.entity_manager"
+            - { currency: "%alpixel_shop.default_currency%", stock: "%alpixel_shop.stock%"}
+            - "@alpixel_shop.price_helper"
+        tags:
+            - { name: twig.extension }
+
+    alpixel_shop.twig.cart_extension:
+        class: Alpixel\Bundle\ShopBundle\Twig\CartExtension
+        arguments:
+          - "@alpixel_shop.cart_manager"
+        tags:
+            - { name: twig.extension }
+
+    # FORM
+    alpixel_shop.form.cart_quantity:
+        class: Alpixel\Bundle\ShopBundle\Form\CartQuantityForm
+        arguments:
+          - "@doctrine.orm.entity_manager"
+          - "@alpixel_shop.cart_manager"
+        tags:
+            - { name: form.type, alias: "cart_quantity" }

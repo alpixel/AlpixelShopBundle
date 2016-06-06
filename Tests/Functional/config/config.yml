@@ -1,0 +1,44 @@
+parameters:
+    secret: 'test'
+    admin_path: 'admin'
+    db_user: travis
+    db_pass: ~
+
+imports:
+    - { resource: framework.yml }
+    - { resource: ../../../Resources/config/security.yml }
+
+doctrine:
+    dbal:
+        connections:
+            default:
+                driver: pdo_mysql
+                host: '127.0.0.1'
+                unix_socket: null
+                port: null
+                dbname: 'cms_test'
+                user: '%db_user%'
+                password: '%db_pass%'
+                charset: utf8mb4
+            default_table_options:
+                charset: utf8mb4
+    orm:
+        auto_generate_proxy_classes: '%kernel.debug%'
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        auto_mapping: true
+
+fos_user:
+    service:
+        mailer: fos_user.mailer.noop
+    db_driver: orm
+    firewall_name: admin
+    user_class: Alpixel\Bundle\ShopBundle\Tests\Functional\Fixture\Bundle\Entity\Customer
+
+alpixel_shop:
+    customer_class: Alpixel\Bundle\ShopBundle\Tests\Functional\Fixture\Bundle\Entity\Customer
+    stock:
+        strategy: soft
+        update: false
+    # product_inheritance:
+    #     - { key: productEskenazi, class: AppBundle\Entity\ProductEskenazi }
+
