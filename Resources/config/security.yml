@@ -1,0 +1,85 @@
+security:
+    providers:
+        admin:
+            entity:
+                class: Alpixel\Bundle\UserBundle\Entity\Admin
+                property: username
+        main:
+            id: fos_user.user_provider.username_email
+
+    firewalls:
+        dev:
+            pattern:  ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        admin:
+            pattern: "^%admin_path%"
+            anonymous: true
+            provider: admin
+            form_login:
+                login_path: "%admin_path%/login"
+                check_path: "%admin_path%/login_check"
+                default_target_path: "%admin_path%"
+                remember_me: true
+            logout:
+                path: "%admin_path%/logout"
+                target: "%admin_path%/login"
+            remember_me:
+                secret: "%secret%"
+        main:
+             pattern: ^/
+             anonymous:      true
+             provider:       main
+             form_login:
+                 login_path: /login
+                 check_path: /login_check
+                 always_use_default_target_path: false
+                 default_target_path:            /
+                 target_path_parameter:          _target_path
+                 use_referer:                    true
+                 remember_me: true
+             logout:
+                 path:       /logout
+                 target:     /login
+                 # invalidate_session: true
+                 # handlers:
+                 #      - fos_http_cache.user_context.logout_handler
+                 success_handler: alpixel_shop.logout_success_handler
+             remember_me:
+                 key:        %secret%
+
+    role_hierarchy:
+       ROLE_USER: ROLE_USER
+       ROLE_ADMIN: [ROLE_SONATA_ADMIN, ROLE_ADMIN]
+       ROLE_SUPER_ADMIN: [ROLE_SUPER_ADMIN, ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+
+    access_control:
+        - { path: "^%admin_path%/login", roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: "^%admin_path%/login_check", roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: "^%admin_path%", roles: [ROLE_SONATA_ADMIN] }
+
+    encoders:
+       Alpixel\Bundle\UserBundle\Entity\Admin:
+            algorithm: pbkdf2
+            hash_algorithm: sha512
+            encode_as_base64: true
+            iterations: 5000
+            key_length: 40
+       Alpixel\Bundle\ShopBundle\Entity\Customer:
+            algorithm: pbkdf2
+            hash_algorithm: sha512
+            encode_as_base64: true
+            iterations: 2000
+            key_length: 40
+
+alpixel_user:
+    default_login_background_image: '../../bundles/alpixeluser/img/background.jpg'
+    default_login_background_color: '#ff656c'
+    firewall_templates:
+        admin:
+            login_path: "%admin_path%/login"
+            login_check: "%admin_path%/login_check"
+            login_template: 'AlpixelUserBundle:admin:page/login.html.twig'
+        main:
+            login_path: "/login"
+            login_check: "/login_check"
+            login_template: 'AlpixelShopBundle:page:login.html.twig'

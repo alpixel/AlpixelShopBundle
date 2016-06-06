@@ -1,0 +1,35 @@
+{
+  "name": "alpixel/shopbundle",
+  "description": "This bundle is used by our team to build an e-commerce website",
+  "type": "symfony-bundle",
+  "keywords": [
+    "alpixel",
+    "ecommerce",
+    "eshop",
+    "symfony2",
+    "symfony",
+    "bundle"
+  ],
+  "homepage": "https://www.alpixel.fr",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "ALPIXEL",
+      "email": "contact@alpixel.fr"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.0",
+    "symfony/symfony": "~2.8",
+    "sensio/framework-extra-bundle": "~3.0",
+    "doctrine/orm": "~2.4",
+    "doctrine/doctrine-bundle": "~1.6",
+    "stof/doctrine-extensions-bundle": "^1.2",
+    "alpixel/userbundle": "~2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Alpixel\\Bundle\\ShopBundle\\": ""
+    }
+  }
+}
