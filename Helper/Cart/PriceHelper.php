@@ -96,7 +96,6 @@ class PriceHelper
             $user = $token->getUser();
             if ($user !== null && $this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY', $user)) {
                 $currency = $user->getCurrency();
-
             } else {
                 $user = null;
             }
