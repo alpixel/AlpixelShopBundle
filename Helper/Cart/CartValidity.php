@@ -12,12 +12,17 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 class CartValidity
 {
     protected $configuration;
-    protected $dispatcher;
 
     public function __construct($configuration)
     {
+        if (!isset($configuration['strategy']) || empty($configuration['strategy'])) {
+            throw new \InvalidArgumentException(
+                'A strategy must be defined, check your config.yml the "strategy" option 
+                    under "alpixel_shop: stock:" !'
+            );
+        }
+
         $this->configuration = $configuration;
-        $this->dispatcher = new EventDispatcher();
     }
 
     protected function getConfigurationStockStrategy()
@@ -39,6 +44,8 @@ class CartValidity
                 return ($product->getQuantity() > 0) ? true : false;
             case 'strict':
                 return ($product->getQuantity() >= $quantity) ? true : false;
+            default:
+                throw new \InvalidArgumentException('Unknown stock strategy check your config.yml under alpxiel_shpo: stock:');
         }
     }
 
