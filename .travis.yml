@@ -20,7 +20,12 @@ before_install:
     - echo "memory_limit=520M" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
     - travis_retry composer self-update
 
+before_script:
+  - export BUILD_HOME=`pwd`
+  - wget https://phar.phpunit.de/phpunit.phar
+
 install:
+  - ./phpunit_setup.sh
   - composer install
   - php Tests/Functional/console doctrine:database:create --env=test
   - php Tests/Functional/console doctrine:schema:create --env=test
