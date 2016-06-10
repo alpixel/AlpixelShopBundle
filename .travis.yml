@@ -22,10 +22,12 @@ before_install:
 
 before_script:
   - export BUILD_HOME=`pwd`
-  - wget https://phar.phpunit.de/phpunit.phar
+  - echo $(which phpunit)
+  - curl -s -o $(which phpunit) https://phar.phpunit.de/phpunit.phar
+  - chmod +x $(which phpunit)
 
 install:
-  - ./phpunit_setup.sh
+#  - ./phpunit_setup.sh
   - composer install
   - php Tests/Functional/console doctrine:database:create --env=test
   - php Tests/Functional/console doctrine:schema:create --env=test

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PHP_TRAVIS_ENV="7.0.1"
+PHP_TRAVIS_ENV=`printenv TRAVIS_PHP_VERSION`
 PHP_VERSION="7"
 HOME=`printenv HOME`
 
@@ -15,9 +15,9 @@ mkdir -p $PHPUNIT_DIR
 if [ $PHP_TRAVIS_ENV \> $PHP_VERSION ]; then
     cd $PHPUNIT_DIR
     wget https://phar.phpunit.de/phpunit.phar
-    mv phpunit.phar phpunit
+    mv phpunit.phar /usr/bin/phpunit
     chmod 755 phpunit
-    PHPUNIT="${PHPUNIT_DIR}/phpunit"
+    PHPUNIT="/usr/bin/phpunit"
     echo $PHPUNIT
     export PHPUNIT="${PHPUNIT}"
 fi
