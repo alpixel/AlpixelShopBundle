@@ -62,7 +62,7 @@ class PriceHelper
      *
      * @return float
      */
-    public function applyDiscount(float $initialValue, float $discount)
+    public function applyDiscount($initialValue, $discount)
     {
         return $initialValue - $this->getDiscountAmount($initialValue, $discount);
     }
@@ -73,7 +73,7 @@ class PriceHelper
      *
      * @return float
      */
-    public function getDiscountAmount(float $initialValue, float $discount)
+    public function getDiscountAmount($initialValue, $discount)
     {
         return $initialValue * $discount / 100;
     }
@@ -96,6 +96,7 @@ class PriceHelper
             $user = $token->getUser();
             if ($user !== null && $this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY', $user)) {
                 $currency = $user->getCurrency();
+
             } else {
                 $user = null;
             }

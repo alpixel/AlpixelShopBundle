@@ -15,9 +15,9 @@ class ProductCalculationEvent extends Event
     protected $product;
     protected $currency;
 
-    public function __construct(float $basePrice, Product $product, Currency $currency, Customer $customer = null)
+    public function __construct($basePrice, Product $product, Currency $currency, Customer $customer = null)
     {
-        $this->price = $this->basePrice = $basePrice;
+        $this->price = $this->basePrice = (float) $basePrice;
         $this->product = $product;
         $this->currency = $currency;
         $this->customer = $customer;
@@ -26,7 +26,7 @@ class ProductCalculationEvent extends Event
     /**
      * @return float
      */
-    public function getPrice():float
+    public function getPrice()
     {
         return $this->price;
     }
