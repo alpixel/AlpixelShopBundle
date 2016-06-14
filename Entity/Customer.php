@@ -2,6 +2,7 @@
 
 namespace Alpixel\Bundle\ShopBundle\Entity;
 
+use Alpixel\Bundle\ShopBundle\Model\CustomerInterface;
 use Alpixel\Bundle\UserBundle\Entity\User as BaseUser;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -10,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\MappedSuperclass()
  */
-class Customer extends BaseUser
+class Customer extends BaseUser implements CustomerInterface
 {
     use \Gedmo\Timestampable\Traits\TimestampableEntity;
 

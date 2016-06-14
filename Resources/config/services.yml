@@ -4,6 +4,14 @@ parameters:
 
 services:
     # CART
+    alpixel_shop.cart.cart_access:
+        class: Alpixel\Bundle\ShopBundle\Cart\CartAccess
+        arguments:
+            - "%alpixel_shop.security%"
+            - "@security.authorization_checker"
+            - "@security.token_storage"
+
+
     alpixel_shop.cart_manager:
         class: Alpixel\Bundle\ShopBundle\Helper\Cart\CartManager
         arguments:
