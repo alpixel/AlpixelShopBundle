@@ -11,6 +11,17 @@ services:
             - "@security.authorization_checker"
             - "@security.token_storage"
 
+    alpixel_shop.cart.cart_provider:
+        class: Alpixel\Bundle\ShopBundle\Cart\CartProvider
+        arguments:
+            - []
+            - "@doctrine.orm.default_entity_manager"
+            - "@alpixel_shop.cart.cart_access"
+
+    alpixel_shop.cart.session_cart:
+        class: Alpixel\Bundle\ShopBundle\Cart\SessionCart
+        arguments:
+            - "@session"
 
     alpixel_shop.cart_manager:
         class: Alpixel\Bundle\ShopBundle\Helper\Cart\CartManager
@@ -19,7 +30,7 @@ services:
             - "@security.token_storage"
             - "@security.authorization_checker"
             - "@event_dispatcher"
-            - "@alpixel_shop.session_cart"
+            - "@alpixel_shop.cart.session_cart"
             - "@alpixel_shop.cart_validity"
             - "@alpixel_shop.price_helper"
 
@@ -28,10 +39,7 @@ services:
         arguments:
             - "%alpixel_shop.stock%"
 
-    alpixel_shop.session_cart:
-        class: Alpixel\Bundle\ShopBundle\Helper\Cart\SessionCart
-        arguments:
-            - "@session"
+
 
     alpixel_shop.price_helper:
         class: Alpixel\Bundle\ShopBundle\Helper\Cart\PriceHelper
@@ -84,8 +92,8 @@ services:
     alpixel_shop.logout_success_handler:
         class: Alpixel\Bundle\ShopBundle\Handler\LogoutSuccessHandler
         arguments:
-          - "@alpixel_shop.session_cart"
-          - "@router"
+            - "@alpixel_shop.cart.session_cart"
+            - "@router"
 
     alpixel_shop.twig.product_extension:
         class: Alpixel\Bundle\ShopBundle\Twig\ProductExtension
