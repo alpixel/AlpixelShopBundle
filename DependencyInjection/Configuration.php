@@ -2,6 +2,7 @@
 
 namespace Alpixel\Bundle\ShopBundle\DependencyInjection;
 
+use Alpixel\Bundle\ShopBundle\Model\CartInterface;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -42,6 +43,34 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('default_currency')
                     ->defaultValue('EUR')
+                ->end()
+                ->arrayNode('cart')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('class')
+                            ->defaultValue('Alpixel\Bundle\ShopBundle\Entity\Cart')
+                            ->validate()
+                            ->always(function ($entity) {
+                                if (!is_string($entity)) {
+                                    throw new \InvalidArgumentException('The "class" parameter must be a string');
+                                } else if (!class_exists($entity)) {
+                                    throw new \LogicException(sprintf(
+                                        'Unable to find the "%s" class, make sure of typo',
+                                        $entity
+                                    ));
+                                } else if (!in_array(CartInterface::class, class_implements($entity))) {
+                                    throw new \LogicException(sprintf(
+                                        'The "%s" class, must implement the "%s" interface',
+                                        $entity,
+                                        CartInterface::class
+                                    ));
+                                }
+
+                                return $entity;
+                            })
+                            ->end()
+                        ->end()
+                    ->end()
                 ->end()
                 ->arrayNode('stock')
                     ->children()
