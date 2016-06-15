@@ -2,6 +2,7 @@
 
 namespace Alpixel\Bundle\ShopBundle\Entity;
 
+use Alpixel\Bundle\ShopBundle\Model\CartInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -11,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="alpixel_shop_cart")
  * @ORM\Entity(repositoryClass="Alpixel\Bundle\ShopBundle\Repository\CartRepository")
  */
-class Cart
+class Cart 
 {
     use \Gedmo\Timestampable\Traits\TimestampableEntity;
 
@@ -46,7 +47,6 @@ class Cart
      */
     public function __construct()
     {
-        $this->customer = new ArrayCollection();
         $this->cartProducts = new ArrayCollection();
     }
 
@@ -77,7 +77,7 @@ class Cart
      *
      * @return Cart
      */
-    public function setCustomer(\Alpixel\Bundle\ShopBundle\Entity\Customer $customer = null)
+    public function setCustomer(\Alpixel\Bundle\ShopBundle\Model\CustomerInterface $customer = null)
     {
         $this->customer = $customer;
 
@@ -120,6 +120,11 @@ class Cart
         $this->cartProducts[] = $cartProduct;
 
         return $this;
+    }
+
+    public function hasCartProducts()
+    {
+        return $this->cartProducts->count() > 0;
     }
 
     public function getCartProducts()
