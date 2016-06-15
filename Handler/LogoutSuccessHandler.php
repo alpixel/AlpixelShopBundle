@@ -2,7 +2,7 @@
 
 namespace Alpixel\Bundle\ShopBundle\Handler;
 
-use Alpixel\Bundle\ShopBundle\Helper\Cart\SessionCart;
+use Alpixel\Bundle\ShopBundle\Cart\SessionCart;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +21,7 @@ class LogoutSuccessHandler implements LogoutSuccessHandlerInterface
 
     public function onLogoutSuccess(Request $request)
     {
-        $this->sessionCart->removeCurrent();
+        $this->sessionCart->remove();
 
         return new RedirectResponse($this->router->generate('shop'));
     }
