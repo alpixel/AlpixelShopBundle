@@ -3,6 +3,7 @@
 namespace Alpixel\Bundle\ShopBundle\Cart;
 
 use Alpixel\Bundle\ShopBundle\Model\CustomerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
@@ -52,7 +53,7 @@ class CartAccess
      */
     public function isAuthorized()
     {
-        return !$this->user === null || $this->isGranted() && $this->getUser() instanceof CustomerInterface;
+        return $this->isGranted() && $this->getUser() instanceof CustomerInterface;
     }
 
     /**
