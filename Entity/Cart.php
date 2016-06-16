@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="alpixel_shop_cart")
  * @ORM\Entity(repositoryClass="Alpixel\Bundle\ShopBundle\Repository\CartRepository")
  */
-class Cart 
+class Cart implements CartInterface
 {
     use \Gedmo\Timestampable\Traits\TimestampableEntity;
 
