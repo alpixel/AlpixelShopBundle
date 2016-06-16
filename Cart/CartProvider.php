@@ -87,7 +87,8 @@ class CartProvider
 
     protected function createCart()
     {
-        $cart = new Cart();
+        $cartClass = $this->configuration['class'];
+        $cart = new $cartClass();
         $cart->setCustomer($this->user);
         $this->entityManager->persist($cart);
         $this->entityManager->flush($cart);

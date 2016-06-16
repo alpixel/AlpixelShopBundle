@@ -14,7 +14,7 @@ services:
     alpixel_shop.cart.cart_provider:
         class: Alpixel\Bundle\ShopBundle\Cart\CartProvider
         arguments:
-            - []
+            - "%alpixel_shop.cart%"
             - "@doctrine.orm.default_entity_manager"
             - "@alpixel_shop.cart.cart_access"
 
