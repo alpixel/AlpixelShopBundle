@@ -46,4 +46,20 @@ The bundle is now ready to work
 
 ## Configuration Reference
 
-WIP
+```
+alpixel_shop:
+    customer_class: AppBundle\Entity\CustomEntity
+```
+You can add a custom entity who extend the Alpixel\Bundle\ShopBundle\Entity\Customer to add your properties or also directly use the Alpixel\Bundle\ShopBundle\Entity\Customer entity.
+
+```
+alpixel_shop:
+    stock:
+        strategy: soft #['soft', 'tolerant', 'strict']
+```
+The option stock strategy allow you to work with different behaviour of stock management.
+
+soft: Allow the order, even if the product has not enough stock
+tolerant: Allow the order if the current stock of the product > 0
+strict: Allow the order only if the stock has enough quantities
+
