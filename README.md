@@ -24,6 +24,10 @@ class AppKernel extends Kernel
         $bundles = array(
             // ...
             new Alpixel\Bundle\ShopBundle\AlpixelShopBundle(),
+            
+            new Happyr\GoogleAnalyticsBundle\HappyrGoogleAnalyticsBundle(), 
+            new Http\HttplugBundle\HttplugBundle(),
+            //If you don't disable the analytics trackings, you will need the bundle above
         );
 
         // ...
@@ -39,7 +43,8 @@ alpixel_shop:
         strategy: soft #['soft', 'tolerant', 'strict']
         update: false # Update stock quantity for products [true, false]
     product_inheritance:
-            - { key: productEskenazi, class: AppBundle\Entity\CustomProduct }
+            - { key: myCustomKey, class: AppBundle\Entity\CustomProduct }
+    use_google_analytics: true #Allow google analytics trackings with happyr bundle
 ```
 
 The bundle is now ready to work
