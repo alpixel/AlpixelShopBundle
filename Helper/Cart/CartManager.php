@@ -382,4 +382,89 @@ class CartManager
     {
         return $this->customer;
     }
+
+    /**
+     * @return Cart|null
+     */
+    public function saveKeepCart($name = null)
+    {
+        $cart = $this->getCurrentCart();
+
+        if ($cart !== null && $cart->getCartProducts()->count() > 0 && $this->getCustomer() !== null) {
+            if (is_string($name) && !empty($name)) {
+                $cart->setName($name);
+                $this->entityManager->persist($cart);
+                $this->entityManager->flush();
+            }
+
+            return $this->newCart();
+        }
+
+        return null;
+    }
+
+    /**
+     * @param Cart $cart
+     * @param Customer|null $customer
+     * @return bool
+     */
+    public function switchCurrentCart(Cart $cart, Customer $customer = null)
+    {
+        $isSwitched = false;
+        if ($cart->getOrder() === null && $this->cartBelongsToCustomer($cart, $customer)) {
+            $this->sessionCart->setCurrent($cart);
+            $isSwitched = true;
+        }
+
+        return $isSwitched;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSavedCarts()
+    {
+        $carts = [];
+
+        if ($this->customer !== null) {
+            $carts = $this->entityManager->getRepository('AlpixelShopBundle:Cart')->findSavedCarts($this->customer);
+        }
+
+        return $carts;
+    }
+
+    /**
+     * @param Cart $cart
+     * @param Customer|null $customer
+     * @return bool
+     */
+    public function deleteCart(Cart $cart, Customer $customer = null)
+    {
+        $isDeleted = false;
+        if ($this->cartBelongsToCustomer($cart, $customer) && $cart->getOrder() === null) {
+            $carts = $this->getSavedCarts();
+            // If the customer have only one cart we disallow to delete him, to avoid multiple requests
+            if (count($carts) > 1) {
+                $this->entityManager->remove($cart);
+                $this->entityManager->flush();
+                $isDeleted = true;
+            }
+        }
+
+        return $isDeleted;
+    }
+
+    /**
+     * @param Cart $cart
+     * @param Customer|null $customer
+     * @return bool
+     */
+    public function cartBelongsToCustomer(Cart $cart, Customer $customer = null)
+    {
+        if ($customer === null) {
+            $customer = $this->getCustomer();
+        }
+
+        return ($cart->getCustomer() === $customer);
+    }
 }
