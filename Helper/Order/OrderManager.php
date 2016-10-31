@@ -15,15 +15,43 @@ use Alpixel\Bundle\ShopBundle\Helper\Cart\PriceHelper;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * @author Benjamin HUBERT <benjamin@alpixel.fr>
+ */
 class OrderManager
 {
+    /**
+     * @var \Doctrine\ORM\EntityManager
+     */
     private $entityManager;
+    /**
+     * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+     */
     private $dispatcher;
+    /**
+     * @var
+     */
     private $currency;
+    /**
+     * @var \Alpixel\Bundle\ShopBundle\Helper\Cart\PriceHelper
+     */
     private $priceHelper;
 
-    public function __construct(CartManager $cartManager, EntityManager $entityManager, EventDispatcherInterface $dispatcher, $defaultCurrency, PriceHelper $priceHelper)
-    {
+    /**
+     * OrderManager constructor.
+     * @param \Alpixel\Bundle\ShopBundle\Helper\Cart\CartManager $cartManager
+     * @param \Doctrine\ORM\EntityManager $entityManager
+     * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher
+     * @param $defaultCurrency
+     * @param \Alpixel\Bundle\ShopBundle\Helper\Cart\PriceHelper $priceHelper
+     */
+    public function __construct(
+        CartManager $cartManager,
+        EntityManager $entityManager,
+        EventDispatcherInterface $dispatcher,
+        $defaultCurrency,
+        PriceHelper $priceHelper
+    ) {
         $this->cartManager = $cartManager;
         $this->entityManager = $entityManager;
         $this->dispatcher = $dispatcher;
@@ -33,20 +61,33 @@ class OrderManager
             ->findOneByName($defaultCurrency);
     }
 
-    public function setCurrencyOrder(Currency $currency)
-    {
-        $this->currency = $currency;
-    }
-
+    /**
+     * @param \Alpixel\Bundle\ShopBundle\Entity\Cart $cart
+     * @param \Alpixel\Bundle\ShopBundle\Entity\Customer $customer
+     * @param $extraData
+     * @return \Alpixel\Bundle\ShopBundle\Entity\Order
+     */
     public function processOrder(Cart $cart, Customer $customer, $extraData)
     {
         $order = $this->newOrder($cart, $customer);
         $order->setExtraData($extraData);
-        $this->saveOrder($order);
+
+        $event = new OrderEvent($order);
+        $this->dispatcher->dispatch(AlpixelShopEvents::ORDER_PRE_PERSIST, $event);
+
+        $this->entityManager->persist($order);
+        $this->entityManager->flush();
+
+        $this->dispatcher->dispatch(AlpixelShopEvents::ORDER_POST_PERSIST, $event);
 
         return $order;
     }
 
+    /**
+     * @param \Alpixel\Bundle\ShopBundle\Entity\Cart $cart
+     * @param \Alpixel\Bundle\ShopBundle\Entity\Customer $customer
+     * @return \Alpixel\Bundle\ShopBundle\Entity\Order
+     */
     public function newOrder(Cart $cart, Customer $customer)
     {
         $order = new Order();
@@ -70,6 +111,10 @@ class OrderManager
             ->setCustomerEmail($customer->getEmail());
     }
 
+    /**
+     * @param \Alpixel\Bundle\ShopBundle\Entity\CartProduct $cartProduct
+     * @return \Alpixel\Bundle\ShopBundle\Entity\OrderProduct
+     */
     public function newProductOrderFromCartProduct(CartProduct $cartProduct)
     {
         $product = $cartProduct->getProduct();
@@ -94,21 +139,19 @@ class OrderManager
             ->setInformation($cartProduct->getProduct()->getReference());
     }
 
+    /**
+     * @param \Alpixel\Bundle\ShopBundle\Entity\Currency $currency
+     */
+    public function setCurrencyOrder(Currency $currency)
+    {
+        $this->currency = $currency;
+    }
+
+    /**
+     * @return mixed
+     */
     public function getCurrencyOrder()
     {
         return $this->currency;
-    }
-
-    public function saveOrder(Order $order)
-    {
-        $event = new OrderEvent($order);
-        $this->dispatcher->dispatch(AlpixelShopEvents::ORDER_PRE_PERSIST, $event);
-
-        $this->entityManager->persist($order);
-        $this->entityManager->flush();
-
-        $this->dispatcher->dispatch(AlpixelShopEvents::ORDER_POST_PERSIST, $event);
-
-        return $this;
     }
 }

@@ -4,7 +4,9 @@ namespace Alpixel\Bundle\ShopBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
@@ -32,5 +34,20 @@ class AlpixelShopExtension extends Extension
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
+
+        if ($config['use_google_analytics'] === true) {
+            $container
+                ->setDefinition(
+                    'alpixel_shop.subscriber.analytics',
+                    new Definition(
+                        'Alpixel\Bundle\ShopBundle\EventListener\AnalyticsSubscriber',
+                        [
+                            new Reference('security.token_storage'),
+                            new Reference('happyr.google_analytics.tracker'),
+                        ]
+                    )
+                )
+                ->addTag('kernel.event_subscriber');
+        }
     }
 }

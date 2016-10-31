@@ -41,4 +41,3 @@ alpixel_shop:
         update: false
     # product_inheritance:
     #     - { key: productEskenazi, class: AppBundle\Entity\ProductEskenazi }
-

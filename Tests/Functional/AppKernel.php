@@ -2,6 +2,7 @@
 
 namespace Alpixel\Bundle\ShopBundle\Tests\Functional;
 
+use Happyr\GoogleAnalyticsBundle\HappyrGoogleAnalyticsBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Kernel;
