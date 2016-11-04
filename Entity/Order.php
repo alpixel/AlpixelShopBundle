@@ -30,7 +30,7 @@ class Order
 
     /**
      * @ORM\OneToOne(targetEntity="\Alpixel\Bundle\ShopBundle\Entity\Cart", inversedBy="order")
-     * @ORM\JoinColumn(name="cart_id", referencedColumnName="id")
+     * @ORM\JoinColumn(name="cart_id", referencedColumnName="id", onDelete="SET NULL")
      */
     private $cart;
 
