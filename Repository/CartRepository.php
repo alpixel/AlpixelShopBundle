@@ -15,8 +15,10 @@ class CartRepository extends \Doctrine\ORM\EntityRepository
     public function queryCurrentCartByCustomer(Customer $customer)
     {
         return $this->createQueryBuilder('c')
+            ->addSelect('o')
+            ->leftJoin('c.order', 'o')
             ->where('c.customer = :customer')
-            ->andWhere('c.order IS NULL')
+            ->andWhere('o.id IS NULL')
             ->setParameter('customer', $customer)
             ->orderBy('c.createdAt', 'DESC')
             ->setMaxResults(1);
@@ -27,5 +29,18 @@ class CartRepository extends \Doctrine\ORM\EntityRepository
         return $this->queryCurrentCartByCustomer($customer)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findSavedCarts(Customer $customer)
+    {
+        return $this->createQueryBuilder('c')
+            ->addSelect('o')
+            ->leftJoin('c.order', 'o')
+            ->where('c.customer = :customer')
+            ->andWhere('o.id IS NULL')
+            ->setParameter('customer', $customer)
+            ->orderBy('c.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

@@ -37,17 +37,24 @@ class Cart
     private $cartProducts;
 
     /**
-     * @ORM\OneToOne(targetEntity="\Alpixel\Bundle\ShopBundle\Entity\Order", inversedBy="cart")
+     * @ORM\OneToOne(targetEntity="\Alpixel\Bundle\ShopBundle\Entity\Order", mappedBy="cart")
      */
     private $order;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="cart_name", length=255, nullable=true)
+     */
+    private $name;
 
     /**
      * Constructor.
      */
     public function __construct()
     {
-        $this->customer = new ArrayCollection();
         $this->cartProducts = new ArrayCollection();
+        $this->name = date('Y-m-d H:i:s');
     }
 
     /**
@@ -145,6 +152,25 @@ class Cart
     public function setOrder(\Alpixel\Bundle\ShopBundle\Entity\Order $order = null)
     {
         $this->order = $order;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     * @return Cart
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
 
         return $this;
     }
