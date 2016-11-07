@@ -3,6 +3,7 @@
 namespace Alpixel\Bundle\ShopBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\DBAL\Types\ArrayType;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -10,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="alpixel_shop_cart")
  * @ORM\Entity(repositoryClass="Alpixel\Bundle\ShopBundle\Repository\CartRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Cart
 {
@@ -54,7 +56,32 @@ class Cart
     public function __construct()
     {
         $this->cartProducts = new ArrayCollection();
-        $this->name = date('Y-m-d H:i:s');
+    }
+
+    public function __clone()
+    {
+        $newProductCollection = new ArrayCollection();
+        foreach ($this->cartProducts as $cartProduct) {
+            $newCartProduct = clone $cartProduct;
+            $newCartProduct->setCart($this);
+            $newProductCollection->add($newCartProduct);
+        }
+
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+        $this->cartProducts = $newProductCollection;
+        $this->order = null;
+        $this->name = null;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     */
+    public function generateName()
+    {
+        if (empty($this->name)) {
+            $this->name = date('d/m/Y H\Hi');
+        }
     }
 
     /**

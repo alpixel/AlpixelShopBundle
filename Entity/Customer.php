@@ -44,6 +44,12 @@ class Customer extends BaseUser
      */
     protected $currency;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="\Alpixel\Bundle\ShopBundle\Entity\Cart")
+     * @ORM\JoinColumn(name="cart_id", referencedColumnName="id", onDelete="SET NULL")
+     */
+    protected $currentCart;
+
     public function __toString()
     {
         return $this->firstname.' '.strtoupper($this->lastname);
@@ -120,4 +126,25 @@ class Customer extends BaseUser
 
         return $this;
     }
+
+    /**
+     * @return Cart
+     */
+    public function getCurrentCart()
+    {
+        return $this->currentCart;
+    }
+
+    /**
+     * @param Cart $currentCart
+     * @return Customer
+     */
+    public function setCurrentCart($currentCart)
+    {
+        $this->currentCart = $currentCart;
+
+        return $this;
+    }
+
+
 }
