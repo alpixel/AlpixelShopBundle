@@ -12,6 +12,8 @@ use Alpixel\Bundle\ShopBundle\Event\CartDiscountCalculationEvent;
 use Alpixel\Bundle\ShopBundle\Event\CartEvent;
 use Alpixel\Bundle\ShopBundle\Event\CartProcessEvent;
 use Alpixel\Bundle\ShopBundle\Event\CartProductEvent;
+use Alpixel\Bundle\ShopBundle\Exception\CartAccessDeniedException;
+use Alpixel\Bundle\ShopBundle\Exception\CartNotFoundException;
 use Alpixel\Bundle\ShopBundle\Exception\NoProductException;
 use Alpixel\Bundle\ShopBundle\Exception\OutOfStockException;
 use Doctrine\ORM\EntityManager;
@@ -132,12 +134,28 @@ class CartManager
     /**
      * @param bool $withProductDiscount
      * @param bool $withCartDiscount
+     * @param null $cartId
      * @return float|int
+     * @throws CartAccessDeniedException
+     * @throws CartNotFoundException
      */
-    public function getTotal($withProductDiscount = true, $withCartDiscount = true)
+    public function getTotal($withProductDiscount = true, $withCartDiscount = true, $cartId = null)
     {
         $total = 0;
-        $cart = $this->getCurrentCart();
+
+        if ($cartId === null) {
+            $cart = $this->getCurrentCart();
+        } else {
+            $cart = $this->entityManager->getRepository('AlpixelShopBundle:Cart')->find($cartId);
+
+            if ($cart === null) {
+                throw new CartNotFoundException(sprintf('Unable to find a cart with id "%s"', $cartId));
+            }
+
+            if (!$this->cartBelongsToCustomer($cart)) {
+                throw new CartAccessDeniedException();
+            }
+        }
 
         foreach ($cart->getCartProducts() as $cartProduct) {
             $total += $this->priceHelper->getProductPrice(
