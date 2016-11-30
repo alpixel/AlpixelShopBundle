@@ -50,6 +50,13 @@ class CartProduct
         return self::class.' #'.$this->id;
     }
 
+    public function __clone()
+    {
+        $this->cart = null;
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+    }
+
     /**
      * Get id.
      *

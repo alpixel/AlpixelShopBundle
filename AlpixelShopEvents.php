@@ -10,8 +10,12 @@ class AlpixelShopEvents
     const CART_PRE_VALIDATION = 'alpixel_shop.cart.event.pre_cart_validation';
     const CART_PROCESS = 'alpixel_shop.cart.event.process_for_order';
 
+    const CART_PRE_MEMORIZE = 'alpixel_shop.cart.event.pre.cart_memorize';
+    const CART_POST_MEMORIZE = 'alpixel_shop.cart.event.post.cart_memorize';
+
     const CART_CREATED = 'alpixel_shop.cart.event.cart_created';
     const CART_UPDATED = 'alpixel_shop.cart.event.cart_updated';
+
     const CART_PRE_EMPTY = 'alpixel_shop.cart.event.pre.cart_empty';
     const CART_POST_EMPTY = 'alpixel_shop.cart.event.post.cart_empty';
 

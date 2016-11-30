@@ -12,6 +12,8 @@ use Alpixel\Bundle\ShopBundle\Event\CartDiscountCalculationEvent;
 use Alpixel\Bundle\ShopBundle\Event\CartEvent;
 use Alpixel\Bundle\ShopBundle\Event\CartProcessEvent;
 use Alpixel\Bundle\ShopBundle\Event\CartProductEvent;
+use Alpixel\Bundle\ShopBundle\Exception\CartAccessDeniedException;
+use Alpixel\Bundle\ShopBundle\Exception\CartNotFoundException;
 use Alpixel\Bundle\ShopBundle\Exception\NoProductException;
 use Alpixel\Bundle\ShopBundle\Exception\OutOfStockException;
 use Doctrine\ORM\EntityManager;
@@ -101,19 +103,26 @@ class CartManager
     }
 
     /**
+     * @param \Alpixel\Bundle\ShopBundle\Entity\Customer $customer
      * @return \Alpixel\Bundle\ShopBundle\Entity\Cart|mixed|null|object
      */
-    public function getCurrentCart()
+    public function getCurrentCart(Customer $customer = null)
     {
-        $cart = $this->sessionCart->getCurrent();
-        if ($cart !== null) {
-            return $this->entityManager->getRepository('AlpixelShopBundle:Cart')
-                ->find($cart);
+        if ($customer === null) {
+            $cart = $this->sessionCart->getCurrent();
+            if ($cart !== null) {
+                return $this->entityManager
+                    ->getRepository('AlpixelShopBundle:Cart')
+                    ->find($cart);
+            }
         }
 
-        if ($this->customer !== null) {
-            $cart = $this->entityManager->getRepository('AlpixelShopBundle:Cart')
-                ->findOneCurrentCartByCustomer($this->customer);
+        if ($customer === null) {
+            $customer = $this->customer;
+        }
+
+        if ($customer !== null) {
+            $cart = $customer->getCurrentCart();
             if ($cart !== null) {
                 $this->sessionCart->setCurrent($cart);
             }
@@ -125,12 +134,28 @@ class CartManager
     /**
      * @param bool $withProductDiscount
      * @param bool $withCartDiscount
+     * @param null $cartId
      * @return float|int
+     * @throws CartAccessDeniedException
+     * @throws CartNotFoundException
      */
-    public function getTotal($withProductDiscount = true, $withCartDiscount = true)
+    public function getTotal($withProductDiscount = true, $withCartDiscount = true, $cartId = null)
     {
         $total = 0;
-        $cart = $this->getCurrentCart();
+
+        if ($cartId === null) {
+            $cart = $this->getCurrentCart();
+        } else {
+            $cart = $this->entityManager->getRepository('AlpixelShopBundle:Cart')->find($cartId);
+
+            if ($cart === null) {
+                throw new CartNotFoundException(sprintf('Unable to find a cart with id "%s"', $cartId));
+            }
+
+            if (!$this->cartBelongsToCustomer($cart)) {
+                throw new CartAccessDeniedException();
+            }
+        }
 
         foreach ($cart->getCartProducts() as $cartProduct) {
             $total += $this->priceHelper->getProductPrice(
@@ -160,25 +185,26 @@ class CartManager
     }
 
     /**
+     * @param \Alpixel\Bundle\ShopBundle\Entity\Customer $customer
      * @return \Alpixel\Bundle\ShopBundle\Entity\Cart
      */
-    private function newCart()
+    private function newCart(Customer $customer = null)
     {
+        if ($customer === null) {
+            $customer = $this->customer;
+        }
+
         $cart = new Cart();
-        $cart->setCustomer($this->customer);
-        $this->saveCart($cart);
+        $cart->setCustomer($customer);
+        $customer->setCurrentCart($cart);
+
+        $this->entityManager->persist($cart);
+        $this->entityManager->persist($cart->getCustomer());
+        $this->entityManager->flush();
+
+        $this->sessionCart->setCurrent($cart);
 
         return $cart;
-    }
-
-    /**
-     * @param \Alpixel\Bundle\ShopBundle\Entity\Cart $cart
-     */
-    protected function saveCart(Cart $cart)
-    {
-        $this->entityManager->persist($cart);
-        $this->entityManager->flush();
-        $this->sessionCart->setCurrent($cart);
     }
 
     /**
@@ -200,7 +226,6 @@ class CartManager
             $this->dispatcher->dispatch(AlpixelShopEvents::CART_POST_EMPTY, new CartEvent($cart));
 
             $cart = $this->newCart();
-            $this->saveCart($cart);
             $this->dispatcher->dispatch(AlpixelShopEvents::CART_CREATED, new CartEvent($cart));
         } else {
             $this->dispatcher->dispatch(AlpixelShopEvents::CART_POST_EMPTY, new CartEvent($cart));
@@ -234,7 +259,8 @@ class CartManager
             $cart = $this->getCurrentCart();
             $this->dispatcher->dispatch(AlpixelShopEvents::CART_PRODUCT_PRE_ADD, new CartProductEvent($cartProduct));
             $cart->addCartProduct($cartProduct);
-            $this->saveCart($cart);
+            $this->entityManager->persist($cart);
+            $this->entityManager->flush();
         }
 
         $this->dispatcher->dispatch(AlpixelShopEvents::CART_PRODUCT_POST_ADD, new CartProductEvent($cartProduct));
@@ -323,7 +349,7 @@ class CartManager
 
         $this->entityManager->flush();
 
-        if(count($cart->getCartProducts()) === 0) {
+        if (count($cart->getCartProducts()) === 0) {
             $this->cancelCurrentCart();
         }
 
@@ -384,39 +410,73 @@ class CartManager
     }
 
     /**
-     * @return Cart|null
+     * @param \Alpixel\Bundle\ShopBundle\Entity\Cart $cart
+     * @param String $newName
+     * @param Boolean $deleteAfterMemorize
+     * @return \Alpixel\Bundle\ShopBundle\Entity\Cart|null
      */
-    public function saveKeepCart($name = null)
+    public function memorize(Cart $cart, $newName = null, $deleteAfterMemorize = true)
     {
-        $cart = $this->getCurrentCart();
-
-        if ($cart !== null && $cart->getCartProducts()->count() > 0 && $this->getCustomer() !== null) {
-            if (is_string($name) && !empty($name)) {
-                $cart->setName($name);
-                $this->entityManager->persist($cart);
-                $this->entityManager->flush();
-            }
-
-            return $this->newCart();
+        if ($cart->getCartProducts()->count() === 0) {
+            throw new \InvalidArgumentException("A cart must have items to be cloned");
         }
 
-        return null;
+        $this->dispatcher->dispatch(AlpixelShopEvents::CART_PRE_MEMORIZE, new CartEvent($cart));
+        if ($deleteAfterMemorize === false) {
+            $newCart = clone $cart;
+            $newCart->setName($newName);
+
+            $this->entityManager->persist($newCart);
+            $this->entityManager->flush();
+
+            $this->dispatcher->dispatch(AlpixelShopEvents::CART_POST_MEMORIZE, new CartEvent($newCart));
+
+            return $newCart;
+        } else {
+            $cart->setName($newName);
+
+            $newCart = $this->newCart();
+            $this->dispatcher->dispatch(AlpixelShopEvents::CART_CREATED, new CartEvent($newCart));
+            $this->dispatcher->dispatch(AlpixelShopEvents::CART_POST_MEMORIZE, new CartEvent($cart));
+
+            return $cart;
+        }
+
     }
 
     /**
      * @param Cart $cart
      * @param Customer|null $customer
-     * @return bool
+     * @param bool $keepSavedCart
+     * @return Cart
      */
-    public function switchCurrentCart(Cart $cart, Customer $customer = null)
+    public function switchCart(Cart $cart, Customer $customer = null, $keepSavedCart = true)
     {
-        $isSwitched = false;
-        if ($cart->getOrder() === null && $this->cartBelongsToCustomer($cart, $customer)) {
-            $this->sessionCart->setCurrent($cart);
-            $isSwitched = true;
+        if($customer === null) {
+            $customer = $this->customer;
         }
 
-        return $isSwitched;
+        if ($this->cartBelongsToCustomer($cart, $customer)) {
+
+            $oldCart = $this->getCurrentCart();
+
+            if ($keepSavedCart === false) {
+                $newCart = $cart;
+            } else {
+                $newCart = clone $cart;
+            }
+
+            $customer->setCurrentCart($newCart);
+            $this->sessionCart->setCurrent($newCart);
+            $this->entityManager->persist($customer);
+            $this->entityManager->remove($oldCart);
+            $this->entityManager->flush();
+
+            return $newCart;
+
+        } else {
+            throw new \InvalidArgumentException('This cart does not belong to this customer');
+        }
     }
 
     /**
