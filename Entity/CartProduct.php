@@ -34,7 +34,7 @@ class CartProduct
 
     /**
      * @ORM\ManyToOne(targetEntity="\Alpixel\Bundle\ShopBundle\Entity\Product", cascade={"persist"})
-     * @ORM\JoinColumn(name="product_id", referencedColumnName="id")
+     * @ORM\JoinColumn(name="product_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $product;
 
