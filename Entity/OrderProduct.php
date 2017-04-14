@@ -60,7 +60,7 @@ class OrderProduct
 
     /**
      * @ORM\ManyToOne(targetEntity="Alpixel\Bundle\ShopBundle\Entity\Product")
-     * @ORM\joinColumn(name="product_id", referencedColumnName="id")
+     * @ORM\joinColumn(name="product_id", referencedColumnName="id", onDelete="SET NULL")
      */
     private $product;
 
