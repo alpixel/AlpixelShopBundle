@@ -14,6 +14,7 @@ services:
             - "@alpixel_shop.session_cart"
             - "@alpixel_shop.cart_validity"
             - "@alpixel_shop.price_helper"
+            - "@alpixel_shop.authorization"
 
     alpixel_shop.cart_validity:
         class: Alpixel\Bundle\ShopBundle\Helper\Cart\CartValidity
@@ -33,6 +34,14 @@ services:
             - "@doctrine.orm.entity_manager"
             - "@event_dispatcher"
             - "%alpixel_shop.default_currency%"
+            - "@alpixel_shop.authorization"
+
+    alpixel_shop.authorization:
+        class: Alpixel\Bundle\ShopBundle\Authorization\Authorization
+        arguments:
+            - "@security.token_storage"
+            - "@security.authorization_checker"
+            - "%alpixel_shop.authorized_roles%"
 
     # ORDER
     alpixel_shop.order_manager:

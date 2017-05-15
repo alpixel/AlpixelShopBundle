@@ -24,6 +24,7 @@ class AlpixelShopExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $container->setParameter('alpixel_shop.authorized_roles', $config['authorized_roles']);
         $container->setParameter('alpixel_shop.stock', $config['stock']);
         $container->setParameter('alpixel_shop.customer_class', $config['customer_class']);
         $container->setParameter('alpixel_shop.default_currency', $config['default_currency']);

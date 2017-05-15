@@ -3,6 +3,7 @@
 namespace Alpixel\Bundle\ShopBundle\Helper\Cart;
 
 use Alpixel\Bundle\ShopBundle\AlpixelShopEvents;
+use Alpixel\Bundle\ShopBundle\Authorization\Authorization;
 use Alpixel\Bundle\ShopBundle\Entity\Product;
 use Alpixel\Bundle\ShopBundle\Entity\ProductPrice;
 use Alpixel\Bundle\ShopBundle\Event\ProductCalculationEvent;
@@ -39,6 +40,11 @@ class PriceHelper
     protected $defaultCurrency;
 
     /**
+     * @var Authorization
+     */
+    protected $authorization;
+
+    /**
      * PriceHelper constructor.
      *
      * @param TokenStorage             $tokenStorage
@@ -46,14 +52,16 @@ class PriceHelper
      * @param EntityManager            $entityManager
      * @param EventDispatcherInterface $eventDispatcher
      * @param                          $defaultCurrency
+     * @param Authorization            $authorization
      */
-    public function __construct(TokenStorage $tokenStorage, AuthorizationChecker $authorizationChecker, EntityManager $entityManager, EventDispatcherInterface $eventDispatcher, $defaultCurrency)
+    public function __construct(TokenStorage $tokenStorage, AuthorizationChecker $authorizationChecker, EntityManager $entityManager, EventDispatcherInterface $eventDispatcher, $defaultCurrency, Authorization $authorization)
     {
         $this->authorizationChecker = $authorizationChecker;
         $this->defaultCurrency = $defaultCurrency;
         $this->tokenStorage = $tokenStorage;
         $this->eventDispatcher = $eventDispatcher;
         $this->entityManager = $entityManager;
+        $this->authorization = $authorization;
     }
 
     /**
@@ -94,7 +102,7 @@ class PriceHelper
 
         if ($token !== null) {
             $user = $token->getUser();
-            if ($user !== null && $this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY', $user)) {
+            if ($user !== null && $this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY', $user) && !$this->authorization->isAuthorized()) {
                 $currency = $user->getCurrency();
             } else {
                 $user = null;
@@ -107,11 +115,11 @@ class PriceHelper
                 ->getRepository('AlpixelShopBundle:Currency')
                 ->findOneByName($this->defaultCurrency);
         }
-
         $productPrice = $product->getPrice($currency);
         if ($productPrice !== null && $productPrice instanceof ProductPrice) {
             $price = $productPrice->getAmount();
             if ($withDiscount) {
+
                 $event = new ProductCalculationEvent($price, $product, $currency, $user);
                 $this->eventDispatcher->dispatch(AlpixelShopEvents::PRODUCT_PRICE_CALCULATION, $event);
                 $price = $event->getPrice();

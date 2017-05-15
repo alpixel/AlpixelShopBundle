@@ -22,6 +22,11 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
+                ->arrayNode('authorized_roles')
+                    ->treatNullLike([])
+                    ->prototype('scalar')->end()
+                    ->defaultValue(['ROLE_SUPER_ADMIN'])
+                ->end()
                 ->scalarNode('customer_class')
                     ->isRequired()
                     ->defaultValue('Alpixel\Bundle\ShopBundle\Entity\CustomerClass')

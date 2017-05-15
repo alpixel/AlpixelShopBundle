@@ -3,6 +3,7 @@
 namespace Alpixel\Bundle\ShopBundle\Helper\Cart;
 
 use Alpixel\Bundle\ShopBundle\AlpixelShopEvents;
+use Alpixel\Bundle\ShopBundle\Authorization\Authorization;
 use Alpixel\Bundle\ShopBundle\Entity\Cart;
 use Alpixel\Bundle\ShopBundle\Entity\CartProduct;
 use Alpixel\Bundle\ShopBundle\Entity\Customer;
@@ -52,6 +53,11 @@ class CartManager
     protected $priceHelper;
 
     /**
+     * @var Authorization
+     */
+    protected $authoriaztion;
+
+    /**
      * CartManager constructor.
      *
      * @param EntityManager $entityManager
@@ -61,6 +67,7 @@ class CartManager
      * @param SessionCart $sessionCart
      * @param CartValidity $cartValidity
      * @param PriceHelper $helper
+     * @param Authorization $authorization
      */
     public function __construct(
         EntityManager $entityManager,
@@ -69,13 +76,15 @@ class CartManager
         EventDispatcherInterface $dispatcher,
         SessionCart $sessionCart,
         CartValidity $cartValidity,
-        PriceHelper $helper
+        PriceHelper $helper,
+        Authorization $authorization
     ) {
         $this->entityManager = $entityManager;
         $this->sessionCart = $sessionCart;
         $this->cartValidity = $cartValidity;
         $this->dispatcher = $dispatcher;
         $this->priceHelper = $helper;
+        $this->authoriaztion = $authorization;
 
         if ($tokenStorage->getToken() !== null) {
             $user = $tokenStorage->getToken()->getUser();
@@ -152,7 +161,10 @@ class CartManager
                 throw new CartNotFoundException(sprintf('Unable to find a cart with id "%s"', $cartId));
             }
 
-            if (!$this->cartBelongsToCustomer($cart)) {
+            // We need to set manually the cart otherwise the app try to access the cart of current user
+            if ($this->authoriaztion->isAuthorized()) {
+                $this->sessionCart->setCurrent($cart);
+            } else if (!$this->cartBelongsToCustomer($cart)) {
                 throw new CartAccessDeniedException();
             }
         }
