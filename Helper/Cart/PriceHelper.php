@@ -102,6 +102,9 @@ class PriceHelper
 
         if ($token !== null) {
             $user = $token->getUser();
+
+            // If !$this->authorization->isAuthorized() is false (the current user haven't ROLE_ADMIN) we get his currency
+            // If the current user is authorized (ROLE_ADMIN) we get the default currency l.116
             if ($user !== null && $this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY', $user) && !$this->authorization->isAuthorized()) {
                 $currency = $user->getCurrency();
             } else {

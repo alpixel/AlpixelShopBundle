@@ -55,7 +55,7 @@ class CartManager
     /**
      * @var Authorization
      */
-    protected $authoriaztion;
+    protected $authorization;
 
     /**
      * CartManager constructor.
@@ -84,7 +84,7 @@ class CartManager
         $this->cartValidity = $cartValidity;
         $this->dispatcher = $dispatcher;
         $this->priceHelper = $helper;
-        $this->authoriaztion = $authorization;
+        $this->authorization = $authorization;
 
         if ($tokenStorage->getToken() !== null) {
             $user = $tokenStorage->getToken()->getUser();
@@ -162,7 +162,7 @@ class CartManager
             }
 
             // We need to set manually the cart otherwise the app try to access the cart of current user
-            if ($this->authoriaztion->isAuthorized()) {
+            if ($this->authorization->isAuthorized()) {
                 $this->sessionCart->setCurrent($cart);
             } else if (!$this->cartBelongsToCustomer($cart)) {
                 throw new CartAccessDeniedException();
