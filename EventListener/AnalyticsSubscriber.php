@@ -113,6 +113,9 @@ class AnalyticsSubscriber implements EventSubscriberInterface
         $this->tracker->send($data, 'transaction');
 
         foreach ($order->getProductOrders() as $product) {
+            if ($product->getProduct() === null) {
+                continue;
+            }
 
             /** @var OrderProduct $product */
             $data = [
