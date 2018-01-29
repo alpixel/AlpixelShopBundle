@@ -2,6 +2,8 @@
 
 namespace Alpixel\Bundle\ShopBundle\Entity;
 
+use Alpixel\Bundle\ShopBundle\Entity\Shipment\Country;
+use Alpixel\Bundle\ShopBundle\Entity\Shipment\Shipment;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\ArrayType;
 use Doctrine\ORM\Mapping as ORM;
@@ -49,6 +51,22 @@ class Cart
      * @ORM\Column(name="cart_name", length=255, nullable=true)
      */
     private $name;
+
+    /**
+     * @var \Alpixel\Bundle\ShopBundle\Entity\Shipment\Shipment
+     *
+     * @ORM\ManyToOne(targetEntity="Alpixel\Bundle\ShopBundle\Entity\Shipment\Shipment")
+     * @ORM\JoinColumn(name="shipment_id", nullable=true)
+     */
+    private $shipment;
+
+    /**
+     * @var \Alpixel\Bundle\ShopBundle\Entity\Shipment\Country
+     *
+     * @ORM\ManyToOne(targetEntity="Alpixel\Bundle\ShopBundle\Entity\Shipment\Country")
+     * @ORM\JoinColumn(name="shipment_country_id", nullable=true)
+     */
+    private $shipmentCountry;
 
     /**
      * Constructor.
@@ -198,6 +216,44 @@ class Cart
     public function setName($name)
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return \Alpixel\Bundle\ShopBundle\Entity\Shipment\Shipment
+     */
+    public function getShipment()
+    {
+        return $this->shipment;
+    }
+
+    /**
+     * @param \Alpixel\Bundle\ShopBundle\Entity\Shipment\Shipment $shipment
+     * @return Cart
+     */
+    public function setShipment(Shipment $shipment = null): Cart
+    {
+        $this->shipment = $shipment;
+
+        return $this;
+    }
+
+    /**
+     * @return \Alpixel\Bundle\ShopBundle\Entity\Shipment\Country
+     */
+    public function getShipmentCountry()
+    {
+        return $this->shipmentCountry;
+    }
+
+    /**
+     * @param \Alpixel\Bundle\ShopBundle\Entity\Shipment\Country $shipmentCountry
+     * @return Cart
+     */
+    public function setShipmentCountry(Country $shipmentCountry = null): Cart
+    {
+        $this->shipmentCountry = $shipmentCountry;
 
         return $this;
     }

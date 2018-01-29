@@ -148,7 +148,7 @@ class CartManager
      * @throws CartAccessDeniedException
      * @throws CartNotFoundException
      */
-    public function getTotal($withProductDiscount = true, $withCartDiscount = true, $cartId = null)
+    public function getTotal($withProductDiscount = true, $withCartDiscount = true, $cartId = null, $withShipment = true)
     {
         $total = 0;
 
@@ -180,6 +180,10 @@ class CartManager
         if ($withCartDiscount) {
             $discount = $this->getCartDiscount();
             $total -= $this->priceHelper->getDiscountAmount($total, $discount);
+        }
+
+        if ($withShipment && null !== $shipment = $cart->getShipment()) {
+            $total += $shipment->getPrice();
         }
 
         return $total;
