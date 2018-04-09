@@ -148,8 +148,13 @@ class CartManager
      * @throws CartAccessDeniedException
      * @throws CartNotFoundException
      */
-    public function getTotal($withProductDiscount = true, $withCartDiscount = true, $cartId = null, $withShipment = true)
-    {
+    public function getTotal(
+        $withProductDiscount = true,
+        $withCartDiscount = true,
+        $cartId = null,
+        $withShipment = true,
+        $withTaxes = 0
+    ) {
         $total = 0;
 
         if ($cartId === null) {
@@ -184,6 +189,10 @@ class CartManager
 
         if ($withShipment && null !== $shipment = $cart->getShipment()) {
             $total += $shipment->getPrice();
+        }
+
+        if (!empty($withTaxes)) {
+            $total += ($total * $withTaxes / 100);
         }
 
         return $total;
@@ -468,7 +477,7 @@ class CartManager
      */
     public function switchCart(Cart $cart, Customer $customer = null, $keepSavedCart = true)
     {
-        if($customer === null) {
+        if ($customer === null) {
             $customer = $this->customer;
         }
 

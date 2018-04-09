@@ -105,7 +105,7 @@ class AnalyticsSubscriber implements EventSubscriberInterface
 
         $data = [
             'ti' => $order->getId(),
-            'tr' => $order->getTotalWoTax(),
+            'tr' => $order->getTotal(),
             'tt' => 0,
             'cu' => $order->getCurrency(),
         ];

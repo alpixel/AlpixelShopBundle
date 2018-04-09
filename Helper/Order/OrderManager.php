@@ -99,8 +99,9 @@ class OrderManager
         }
 
         $order->setDiscount($this->cartManager->getCartDiscount());
-        $order->setBareTotalWoTax($this->cartManager->getTotal(true, false));
-        $order->setTotalWoTax($this->cartManager->getTotal(true, true));
+        $order->setBareTotalWoTax($this->cartManager->getTotal(true, false, null, true, 0));
+        $order->setTotalWoTax($this->cartManager->getTotal(true, true, null, true, 0));
+        $order->setTotal($this->cartManager->getTotal(true, true, null, true, $customer->getVatRate()));
 
         return $order
             ->setCart($cart)

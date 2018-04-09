@@ -86,6 +86,13 @@ class Order
     private $totalWoTax;
 
     /**
+     * @var float
+     *
+     * @ORM\Column(name="total", type="decimal", precision=10, scale=2)
+     */
+    private $total;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="currency", type="string", length=10)
@@ -370,4 +377,24 @@ class Order
 
         return $this;
     }
+
+    /**
+     * @return float
+     */
+    public function getTotal()
+    {
+        return $this->total;
+    }
+
+    /**
+     * @param float $total
+     * @return Order
+     */
+    public function setTotal($total = null)
+    {
+        $this->total = $total;
+
+        return $this;
+    }
+
 }
