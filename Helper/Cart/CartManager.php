@@ -182,17 +182,19 @@ class CartManager
             );
         }
 
-        if ($withCartDiscount) {
-            $discount = $this->getCartDiscount();
-            $total -= $this->priceHelper->getDiscountAmount($total, $discount);
-        }
-
         if ($withShipment && null !== $shipment = $cart->getShipment()) {
             $total += $shipment->getPrice();
         }
 
+        $total = round($total, 2);
+
+        if ($withCartDiscount) {
+            $discount = $this->getCartDiscount();
+            $total -= round($this->priceHelper->getDiscountAmount($total, $discount), 2);
+        }
+
         if (!empty($withTaxes)) {
-            $total += ($total * $withTaxes / 100);
+            $total += round(($total * $withTaxes / 100), 2);
         }
 
         return $total;
